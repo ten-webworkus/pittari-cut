@@ -136,6 +136,8 @@ const BLADE_L=34;            // 刃の長さ（マス）
 const MOVE_V=150;            // コントローラーで木が動く最大の速さ（画面px/秒）
 const ROT_V=1.4;             // 回転の最大の速さ（ラジアン/秒）
 const TOL=2;                 // 絵のふち何マスまでは「残っていてOK」
+const GUIDE_SEC=20;          // 刃の向きのガイド（矢印など）を出しておく秒数
+let playT0=-99;
 const PTS={clean:40, damage:30, cuts:15, time:15};   // 配点（合計100）
 
 const $=id=>document.getElementById(id);
@@ -420,7 +422,7 @@ function startGame(m,it){
   $("ovPick").classList.add("hide");
   buildPicture(item); resetBoard();
   cuts=0; lostPic=0; tStart=0; tEnd=0; falling=[]; chips=[];
-  state="play"; resize();
+  state="play"; resize(); playT0=now;
   bx=KX; by=KY+BS*0.5+28; ang=0; touching=false; dirty=false; startMotor();   // 刃のすぐ下に板を置く
   $("ovTitle").classList.add("hide"); $("ovRes").classList.add("hide"); $("hud").classList.remove("hide");
   $("hName").textContent=(m==="daily"?`今日のお題（${todayStr()}）`:"お題")+"："+item[1];
@@ -502,7 +504,9 @@ function drawBlade(){
   // 切れる向きのガイド：刃を通る縦のライン（ここに沿って切れる）
   ctx.setLineDash([10,8]); ctx.lineWidth=2; ctx.strokeStyle="rgba(255,90,70,.55)";
   ctx.beginPath(); ctx.moveTo(KX,KY+half+6); ctx.lineTo(KX,H*0.78); ctx.stroke(); ctx.setLineDash([]);
-  // 上下の矢印（この向きに動かすと切れる）
+  // 上下の矢印・「この向きに切れる」・✕は、プレイ開始から20秒だけ表示（そのあと1秒で消える）
+  const ga=Math.max(0,Math.min(1,GUIDE_SEC+1-(now-playT0)));
+  ctx.save(); ctx.globalAlpha=ga;
   const ay=KY+half+30, bob=Math.sin(now*4)*4;
   const arrow=(x,y,dir)=>{ ctx.beginPath(); ctx.moveTo(x,y+dir*14); ctx.lineTo(x-9,y); ctx.lineTo(x-3.5,y); ctx.lineTo(x-3.5,y-dir*12); ctx.lineTo(x+3.5,y-dir*12); ctx.lineTo(x+3.5,y); ctx.lineTo(x+9,y); ctx.closePath(); ctx.fill(); ctx.stroke(); };
   ctx.fillStyle="#ffd23f"; ctx.strokeStyle="#2a1d0e"; ctx.lineWidth=2;
@@ -512,6 +516,7 @@ function drawBlade(){
   // 横は切れない印
   ctx.fillStyle="rgba(255,255,255,.55)"; ctx.font="900 14px sans-serif"; ctx.textAlign="center";
   ctx.fillText("✕",KX-62,KY+5); ctx.fillText("✕",KX+62,KY+5); ctx.textAlign="left";
+  ctx.restore();
   const top=KY-half-46;
   ctx.fillStyle="#2b2e34"; ctx.strokeStyle="#15171b"; ctx.lineWidth=2;
   ctx.fillRect(KX-18,top-28,36,30); ctx.strokeRect(KX-18,top-28,36,30);
