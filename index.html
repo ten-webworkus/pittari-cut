@@ -136,7 +136,7 @@ const BLADE_L=34;            // 刃の長さ（マス）
 const MOVE_V=150;            // コントローラーで木が動く最大の速さ（画面px/秒）
 const ROT_V=1.4;             // 回転の最大の速さ（ラジアン/秒）
 const TOL=2;                 // 絵のふち何マスまでは「残っていてOK」
-const GUIDE_SEC=20;          // 刃の向きのガイド（矢印など）を出しておく秒数
+const GUIDE_SEC=5;           // 切り始めてから、刃の向きのガイド（矢印など）を出しておく秒数
 let playT0=-99;
 const PTS={clean:40, damage:30, cuts:15, time:15};   // 配点（合計100）
 
@@ -504,8 +504,8 @@ function drawBlade(){
   // 切れる向きのガイド：刃を通る縦のライン（ここに沿って切れる）
   ctx.setLineDash([10,8]); ctx.lineWidth=2; ctx.strokeStyle="rgba(255,90,70,.55)";
   ctx.beginPath(); ctx.moveTo(KX,KY+half+6); ctx.lineTo(KX,H*0.78); ctx.stroke(); ctx.setLineDash([]);
-  // 上下の矢印・「この向きに切れる」・✕は、プレイ開始から20秒だけ表示（そのあと1秒で消える）
-  const ga=Math.max(0,Math.min(1,GUIDE_SEC+1-(now-playT0)));
+  // 上下の矢印・「この向きに切れる」・✕は、切り始めて（タイマーが動き出して）から5秒で消える（1秒かけて）
+  const ga=tStart?Math.max(0,Math.min(1,GUIDE_SEC+1-(now-tStart))):1;
   ctx.save(); ctx.globalAlpha=ga;
   const ay=KY+half+30, bob=Math.sin(now*4)*4;
   const arrow=(x,y,dir)=>{ ctx.beginPath(); ctx.moveTo(x,y+dir*14); ctx.lineTo(x-9,y); ctx.lineTo(x-3.5,y); ctx.lineTo(x-3.5,y-dir*12); ctx.lineTo(x+3.5,y-dir*12); ctx.lineTo(x+3.5,y); ctx.lineTo(x+9,y); ctx.closePath(); ctx.fill(); ctx.stroke(); };
